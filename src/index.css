@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@layer base {
+  @font-face {
+    font-family: "Gilroy";
+    src: url("./assets/fonts/Gilroy-Regular.woff") format("woff");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: "Gilroy";
+    src: url("./assets/fonts/Gilroy-Medium.woff") format("woff");
+    font-weight: 500;
+  }
+
+  @font-face {
+    font-family: "Gilroy";
+    src: url("./assets/fonts/Gilroy-Bold.woff") format("woff");
+    font-weight: 700;
+  }
+}
+
+@theme {
+  --breakpoint-sm: 23.5rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 90rem;
+  --color-dark-gray: #141414;
+  --color-middle-gray: #1f1f1f;
+  --color-light-gray: #262626;
+  --color-very-light-gray: #686868;
+  --color-white: #f9f9f9;
+  --color-red: #e90516;
+  --color-green: #30b94d;
+  --color-blue: #4f92f7;
+}
+
+body {
+  font-family: "Gilroy", sans-serif;
+  background-color: #141414;
+}
+
+.container {
+  @apply mx-auto
+        w-full
+        min-w-[320px]
+        px-5
+        max-w-[376px]
+        md:px-8
+        md:max-w-[768px]
+        lg:max-w-[1440px];
+}
