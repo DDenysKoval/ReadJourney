@@ -35,7 +35,7 @@ const ButtonComp = ({
   return (
     <button
       className={clsx(
-        "block rounded-[30px] font-bold text-[18px] leading-[1.56] border cursor-pointer transition duration-300 ease-in-out mt-auto",
+        "block rounded-[30px] font-bold text-[14px] leading-[1.56] border cursor-pointer transition duration-300 ease-in-out mt-auto",
         width,
         height,
         backgroundColor,

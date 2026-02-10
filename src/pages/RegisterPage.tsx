@@ -7,6 +7,8 @@ import ButtonComp from "../components/ButtonComp";
 import { useNavigate } from "react-router";
 import HeroImage from "../components/HeroImage";
 import LogoLink from "../components/LogoLink";
+import { registerUser } from "../services/userServices";
+import { useAuthStore } from "../libs/store/authStore";
 
 export interface SubmitLoginFormValues {
   name: string;
@@ -20,14 +22,17 @@ const validationSchema = Yup.object({
     .max(30, "Name is too long")
     .required("Name is required"),
   email: Yup.string()
-    .email("Invalid email format")
+    .matches(/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/, "Invalid email format")
     .required("Enter a valid Email*"),
-  password: Yup.string().required("Enter a valid Password*"),
+  password: Yup.string()
+    .min(7, "Password must be at least 7 characters")
+    .required("Enter a valid Password*"),
 });
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { setAuth } = useAuthStore.getState();
 
   const {
     register,
@@ -44,15 +49,18 @@ export default function RegisterPage() {
   });
 
   const onSubmit: SubmitHandler<SubmitLoginFormValues> = async (values) => {
-    console.log(values);
-
-    toast.success("Successfully registered!");
-    reset();
-    navigate("/");
+    const response = await registerUser(values);
+    if (response) {
+      setAuth(response);
+      toast.success("Successfully registered!");
+      reset();
+      navigate("/");
+    } else {
+      toast.error("Registration failed");
+    }
   };
 
   const buttonLogin = {
-    text: "Log in",
     width: "w-[131px]",
     height: "h-[42px]",
     backgroundColor: "bg-white",
@@ -68,7 +76,9 @@ export default function RegisterPage() {
       <section className="py-5">
         <div className="container">
           <div className="relative w-full h-110.75 p-5 pb-10 bg-middle-gray rounded-[30px] mb-2.5">
-            <LogoLink />
+            <div className="pb-10">
+              <LogoLink />
+            </div>
             <form
               className=" flex flex-col gap-4 "
               onSubmit={handleSubmit(onSubmit)}
@@ -84,9 +94,9 @@ export default function RegisterPage() {
                   type="text"
                   className="  text-white outline-0 w-full"
                 />
-                {errors.email && (
+                {errors.name && (
                   <span className="text-red text-[10px] absolute top-11 left-0">
-                    {errors.email.message}
+                    {errors.name.message}
                   </span>
                 )}
               </div>

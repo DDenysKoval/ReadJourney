@@ -7,6 +7,8 @@ import ButtonComp from "../components/ButtonComp";
 import { useNavigate } from "react-router";
 import HeroImage from "../components/HeroImage";
 import LogoLink from "../components/LogoLink";
+import { loginUser } from "../services/userServices";
+import { useAuthStore } from "../libs/store/authStore";
 
 export interface SubmitLoginFormValues {
   email: string;
@@ -15,14 +17,17 @@ export interface SubmitLoginFormValues {
 
 const validationSchema = Yup.object({
   email: Yup.string()
-    .email("Invalid email format")
+    .matches(/^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/, "Invalid email format")
     .required("Enter a valid Email*"),
-  password: Yup.string().required("Enter a valid Password*"),
+  password: Yup.string()
+    .min(7, "Password must be at least 7 characters")
+    .required("Enter a valid Password*"),
 });
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { setAuth } = useAuthStore.getState();
 
   const {
     register,
@@ -38,15 +43,18 @@ export default function LoginPage() {
   });
 
   const onSubmit: SubmitHandler<SubmitLoginFormValues> = async (values) => {
-    console.log(values);
-
-    toast.success("Successfully logged in!");
-    reset();
-    navigate("/");
+    const response = await loginUser(values);
+    if (response) {
+      setAuth(response);
+      toast.success("Successfully logged in!");
+      reset();
+      navigate("/");
+    } else {
+      toast.error("Email or password invalid");
+    }
   };
 
   const buttonLogin = {
-    text: "Log in",
     width: "w-[131px]",
     height: "h-[42px]",
     backgroundColor: "bg-white",
@@ -62,7 +70,9 @@ export default function LoginPage() {
       <section className="py-5">
         <div className="container">
           <div className="relative w-full h-110.75 p-5 pb-10 bg-middle-gray rounded-[30px] mb-2.5">
-            <LogoLink />
+            <div className="pb-10">
+              <LogoLink />
+            </div>
             <form
               className=" flex flex-col gap-4 "
               onSubmit={handleSubmit(onSubmit)}
