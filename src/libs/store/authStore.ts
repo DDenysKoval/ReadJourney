@@ -13,6 +13,7 @@ export interface AuthStore {
   isAuthenticated: boolean;
   user: User | null;
   token: string | null;
+  refreshToken: string | null;
   setAuth: (data: AuthResponse) => void;
   clearAuth: () => void;
 }
@@ -23,6 +24,7 @@ export const useAuthStore = create<AuthStore>()(
       isAuthenticated: false,
       user: null,
       token: null,
+      refreshToken: null,
 
       setAuth: (data) => {
         set({
@@ -31,6 +33,7 @@ export const useAuthStore = create<AuthStore>()(
             name: data.name,
           },
           token: data.token,
+          refreshToken: data.refreshToken,
           isAuthenticated: true,
         });
       },
@@ -39,15 +42,17 @@ export const useAuthStore = create<AuthStore>()(
         set({
           user: null,
           token: null,
+          refreshToken: null,
           isAuthenticated: false,
         });
       },
     }),
     {
-      name: "auth-storage", // ключ у localStorage
+      name: "auth-storage",
       partialize: (state) => ({
         user: state.user,
         token: state.token,
+        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
     }

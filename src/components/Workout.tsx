@@ -1,7 +1,7 @@
 export default function Workout() {
   return (
     <div className="w-full bg-light-gray rounded-xl p-5">
-      <h1 className="mb-5 text-white">Start your workout</h1>
+      <h2 className="mb-5 text-white">Start your workout</h2>
       <ol className="mb-5 flex flex-col gap-5">
         <li className="flex gap-3">
           <div className="flex justify-center items-center w-10 h-10 rounded-[50%] bg-white shrink-0 text-[18px] font-bold">
@@ -29,7 +29,7 @@ export default function Workout() {
         >
           My library
         </a>
-        <a href="/login">
+        <a href="/library">
           <svg height={24} width={24}>
             <use href="/icons.svg#login"></use>
           </svg>

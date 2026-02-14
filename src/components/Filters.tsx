@@ -17,7 +17,11 @@ const toApplyButton = {
   colorHover: "hover:text-middle-gray",
 };
 
-export default function Filters() {
+export interface FiltersProps {
+  isNumberOfPages: boolean;
+}
+
+export default function Filters({ isNumberOfPages }: FiltersProps) {
   const {
     register,
     handleSubmit,
@@ -56,7 +60,9 @@ export default function Filters() {
             </span>
           )}
         </div>
-        <div className=" flex items-center p-3.5  bg-light-gray rounded-xl w-full h-11 mb-5">
+        <div
+          className={`flex items-center p-3.5  bg-light-gray rounded-xl w-full h-11 ${isNumberOfPages ? "mb-0" : "mb-5"}`}
+        >
           <label className=" text-very-light-gray mr-2 shrink-0">
             The author:
           </label>
@@ -72,11 +78,37 @@ export default function Filters() {
             </span>
           )}
         </div>
-        <ButtonComp
-          text={isSubmitting ? "Applying" : "To apply"}
-          type="submit"
-          buttonData={toApplyButton}
-        />
+        {isNumberOfPages && (
+          <div className=" flex items-center p-3.5  bg-light-gray rounded-xl w-full h-11 mb-5">
+            <label className=" text-very-light-gray mr-2 shrink-0">
+              The author:
+            </label>
+            <input
+              {...register("author")}
+              type="text"
+              className="  text-white outline-0 w-full placeholder:text-white"
+              placeholder="Enter text"
+            />
+            {errors.author && (
+              <span className="text-red text-[10px] absolute top-11 left-0">
+                {errors.author.message}
+              </span>
+            )}
+          </div>
+        )}
+        {isNumberOfPages ? (
+          <ButtonComp
+            text={isSubmitting ? "Adding" : "Add book"}
+            type="submit"
+            buttonData={toApplyButton}
+          />
+        ) : (
+          <ButtonComp
+            text={isSubmitting ? "Applying" : "To apply"}
+            type="submit"
+            buttonData={toApplyButton}
+          />
+        )}
       </form>
     </div>
   );

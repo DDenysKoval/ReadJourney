@@ -6,7 +6,7 @@ interface DashboardProps {
 
 export default function Dashboard({ children }: DashboardProps) {
   return (
-    <section>
+    <section className="mb-2.5">
       <div className="container">
         <div className="w-full bg-middle-gray rounded-[30px] p-5 md:p-8 lg:p-5 lg:pt-10">
           {children}
