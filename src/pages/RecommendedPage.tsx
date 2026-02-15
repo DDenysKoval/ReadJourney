@@ -1,15 +1,24 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "../libs/store/authStore";
 import { useNavigate } from "react-router";
 import Header from "../components/Header";
 import Dashboard from "../components/Dashboard";
-import Filters from "../components/Filters";
+import Filters, { type FilterFormValues } from "../components/Filters";
 import Workout from "../components/Workout";
 import Recommended from "../components/Recommended";
 
 export default function RecommendedPage() {
+  const [filters, setFilters] = useState<FilterFormValues>({
+    title: "",
+    author: "",
+    totalPages: "",
+  });
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
+
+  const handleSubmit = (values: FilterFormValues) => {
+    setFilters(values);
+  };
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -20,10 +29,10 @@ export default function RecommendedPage() {
     <main>
       <Header user={user} />
       <Dashboard>
-        <Filters isNumberOfPages={false} />
+        <Filters isNumberOfPages={false} onSubmitFilters={handleSubmit} />
         <Workout />
       </Dashboard>
-      <Recommended />
+      <Recommended filters={filters} />
     </main>
   );
 }

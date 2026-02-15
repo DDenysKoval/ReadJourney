@@ -2,6 +2,7 @@ import axios from "axios";
 import type { User } from "../types/user.ts";
 import { useAuthStore } from "../libs/store/authStore.ts";
 import type { Book } from "../types/books.ts";
+import type { FilterFormValues } from "../components/Filters.tsx";
 
 export interface registerUserRequest {
   name: string;
@@ -31,6 +32,7 @@ export interface loginUserResponse {
 export interface fetchAllBooksRequest {
   page: number;
   limit: number;
+  filters?: FilterFormValues;
 }
 
 export interface fetchAllBooksResponse {
@@ -39,7 +41,9 @@ export interface fetchAllBooksResponse {
   page: number;
   perPage: number;
 }
-
+export interface fetchOwnBooksRequest {
+  status: "in-progress" | "done" | "unread";
+}
 export interface fetchOwnBooksResponse {
   _id: string;
   title: string;
@@ -60,6 +64,10 @@ export interface fetchOwnBooksResponse {
   ];
 }
 
+const refreshApi = axios.create({
+  baseURL: "https://readjourney.b.goit.study/api",
+});
+
 const api = axios.create({
   baseURL: "https://readjourney.b.goit.study/api",
 });
@@ -79,35 +87,43 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = useAuthStore.getState().refreshToken;
-
-        const { data } = await axios.get(
-          "https://readjourney.b.goit.study/api/users/current/refresh",
-          {
-            headers: {
-              Authorization: `Bearer ${refreshToken}`,
-            },
-          }
-        );
-
-        useAuthStore.getState().setAuth(data);
-
-        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
-
-        return api(originalRequest);
-      } catch (err) {
-        useAuthStore.getState().clearAuth();
-        return Promise.reject(err);
-      }
+    if (!error.response || error.response.status !== 401) {
+      return Promise.reject(error);
     }
 
-    return Promise.reject(error);
+    if (originalRequest._retry) {
+      useAuthStore.getState().clearAuth();
+      return Promise.reject(error);
+    }
+
+    originalRequest._retry = true;
+
+    try {
+      const { refreshToken } = useAuthStore.getState();
+
+      if (!refreshToken) {
+        throw new Error("No refresh token");
+      }
+
+      const { data } = await refreshApi.get("/users/current/refresh", {
+        headers: {
+          Authorization: `Bearer ${refreshToken}`,
+        },
+      });
+
+      useAuthStore.getState().setAuth(data);
+
+      originalRequest.headers.Authorization = `Bearer ${data.token}`;
+
+      return api(originalRequest);
+    } catch (err) {
+      useAuthStore.getState().clearAuth();
+      return Promise.reject(err);
+    }
   }
 );
+
+export default api;
 
 export const registerUser = async (data: registerUserRequest) => {
   try {
@@ -157,10 +173,14 @@ export const currentUser = async () => {
   }
 };
 
-export const fetchAllBooks = async ({ page, limit }: fetchAllBooksRequest) => {
+export const fetchAllBooks = async ({
+  page,
+  limit,
+  filters,
+}: fetchAllBooksRequest) => {
   try {
     const response = await api.get<fetchAllBooksResponse>("/books/recommend", {
-      params: { page, limit },
+      params: { page, limit, title: filters?.title, author: filters?.author },
     });
     return response.data;
   } catch {
@@ -186,9 +206,20 @@ export const addToLibraryBook = async (id: string) => {
   }
 };
 
-export const fetchOwnBooks = async () => {
+export const addToLibraryOwnBook = async (book: FilterFormValues) => {
   try {
-    const response = await api.get<fetchOwnBooksResponse[]>("/books/own");
+    const response = await api.post("/books/add", book);
+    return response.data;
+  } catch {
+    throw new Error("Failed add book to library");
+  }
+};
+
+export const fetchOwnBooks = async (params?: fetchOwnBooksRequest) => {
+  try {
+    const response = await api.get<fetchOwnBooksResponse[]>("/books/own", {
+      params,
+    });
     return response.data;
   } catch {
     throw new Error("Failed to fetch your books");

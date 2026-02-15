@@ -9,16 +9,21 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import Modal from "./Modal";
 import ButtonComp from "./ButtonComp";
 import toast from "react-hot-toast";
+import type { FilterFormValues } from "./Filters";
 
-export default function Recommended() {
+interface RecommendProps {
+  filters: FilterFormValues;
+}
+
+export default function Recommended({ filters }: RecommendProps) {
   const [page, setPage] = useState(1);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
 
   const limit = 2;
   const { data } = useQuery({
-    queryKey: ["books", page, limit],
-    queryFn: () => fetchAllBooks({ page, limit }),
+    queryKey: ["books", page, limit, filters],
+    queryFn: () => fetchAllBooks({ page, limit, filters }),
     placeholderData: keepPreviousData,
   });
 

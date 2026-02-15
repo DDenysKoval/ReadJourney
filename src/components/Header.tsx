@@ -62,7 +62,7 @@ export default function Header({ user }: HeaderProps) {
             <div className="flex gap-2.5 md:gap-4">
               <div className="flex items-center">
                 <div className="flex items-center justify-center w-8.75 h-8.75 md:w-10 md:h-10 rounded-[50%] bg-light-gray border border-very-light-gray text-white">
-                  {user?.name.slice(0, 1)}
+                  {user?.name?.slice(0, 1)}
                 </div>
                 <p className="text-white hidden lg:block">{user?.name}</p>
               </div>

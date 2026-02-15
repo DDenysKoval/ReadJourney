@@ -1,4 +1,9 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useState } from "react";
 import {
   addToLibraryBook,
@@ -14,8 +19,12 @@ export default function LibraryRecommended() {
   // const [page, setPage] = useState(1);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
+
+  const queryClient = useQueryClient();
+
   const page = 1;
   const limit = 3;
+
   const { data } = useQuery({
     queryKey: ["books", page, limit],
     queryFn: () => fetchAllBooks({ page, limit }),
@@ -27,6 +36,19 @@ export default function LibraryRecommended() {
     queryFn: () => fetchBookById(selectedBookId!),
     enabled: !!selectedBookId,
   });
+
+  const addToLibraryMutation = useMutation({
+    mutationFn: addToLibraryBook,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["books"] });
+      toast.success("Added to library sucessfully");
+      setModalIsOpen(false);
+    },
+    onError: () => {
+      toast.error("Add to library was failed");
+    },
+  });
+
   const handleOpenModal = async (id: string) => {
     setSelectedBookId(id);
     setModalIsOpen(true);
@@ -34,14 +56,9 @@ export default function LibraryRecommended() {
   const handleCloseModal = () => {
     setModalIsOpen(false);
   };
+
   const handleAddTolibrary = async (id: string) => {
-    try {
-      await addToLibraryBook(id);
-      toast.success("Added to library sucessfully");
-      setModalIsOpen(false);
-    } catch {
-      toast.error("Add to library was failed");
-    }
+    addToLibraryMutation.mutate(id);
   };
   const addToLibraryButton = {
     width: "w-[141px]",

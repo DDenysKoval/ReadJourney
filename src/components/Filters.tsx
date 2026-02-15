@@ -4,6 +4,7 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 export interface FilterFormValues {
   title: string;
   author: string;
+  totalPages: string;
 }
 
 const toApplyButton = {
@@ -19,9 +20,13 @@ const toApplyButton = {
 
 export interface FiltersProps {
   isNumberOfPages: boolean;
+  onSubmitFilters: (values: FilterFormValues) => void;
 }
 
-export default function Filters({ isNumberOfPages }: FiltersProps) {
+export default function Filters({
+  isNumberOfPages,
+  onSubmitFilters,
+}: FiltersProps) {
   const {
     register,
     handleSubmit,
@@ -31,12 +36,12 @@ export default function Filters({ isNumberOfPages }: FiltersProps) {
     defaultValues: {
       title: "",
       author: "",
+      totalPages: "",
     },
   });
 
   const onSubmit: SubmitHandler<FilterFormValues> = async (values) => {
-    console.log(values);
-
+    onSubmitFilters(values);
     reset();
   };
 
@@ -81,34 +86,35 @@ export default function Filters({ isNumberOfPages }: FiltersProps) {
         {isNumberOfPages && (
           <div className=" flex items-center p-3.5  bg-light-gray rounded-xl w-full h-11 mb-5">
             <label className=" text-very-light-gray mr-2 shrink-0">
-              The author:
+              Number of pages:
             </label>
             <input
-              {...register("author")}
-              type="text"
+              {...register("totalPages")}
+              type="number"
               className="  text-white outline-0 w-full placeholder:text-white"
-              placeholder="Enter text"
+              placeholder="0"
             />
-            {errors.author && (
+            {errors.totalPages && (
               <span className="text-red text-[10px] absolute top-11 left-0">
-                {errors.author.message}
+                {errors.totalPages.message}
               </span>
             )}
           </div>
         )}
-        {isNumberOfPages ? (
-          <ButtonComp
-            text={isSubmitting ? "Adding" : "Add book"}
-            type="submit"
-            buttonData={toApplyButton}
-          />
-        ) : (
-          <ButtonComp
-            text={isSubmitting ? "Applying" : "To apply"}
-            type="submit"
-            buttonData={toApplyButton}
-          />
-        )}
+
+        <ButtonComp
+          text={
+            isNumberOfPages
+              ? isSubmitting
+                ? "Adding"
+                : "Add book"
+              : isSubmitting
+                ? "Applying"
+                : "To apply"
+          }
+          type="submit"
+          buttonData={toApplyButton}
+        />
       </form>
     </div>
   );

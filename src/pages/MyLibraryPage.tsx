@@ -1,15 +1,22 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Header from "../components/Header";
 import Dashboard from "../components/Dashboard";
-import Filters from "../components/Filters";
+import Filters, { type FilterFormValues } from "../components/Filters";
 import LibraryRecommended from "../components/LibraryRecommended";
 import { useNavigate } from "react-router";
 import { useAuthStore } from "../libs/store/authStore";
 import MyLibrary from "../components/MyLibrary";
 
 export default function MyLibraryPage() {
+  const [bookToCreate, setBookToCreate] = useState<FilterFormValues | null>(
+    null
+  );
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
+
+  const handleSubmit = (values: FilterFormValues) => {
+    setBookToCreate(values);
+  };
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -20,10 +27,10 @@ export default function MyLibraryPage() {
     <main>
       <Header user={user} />
       <Dashboard>
-        <Filters isNumberOfPages={true} />
+        <Filters isNumberOfPages={true} onSubmitFilters={handleSubmit} />
         <LibraryRecommended />
       </Dashboard>
-      <MyLibrary />
+      <MyLibrary bookToCreate={bookToCreate} />
     </main>
   );
 }
