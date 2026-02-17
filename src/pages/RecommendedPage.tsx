@@ -6,6 +6,7 @@ import Dashboard from "../components/Dashboard";
 import Filters, { type FilterFormValues } from "../components/Filters";
 import Workout from "../components/Workout";
 import Recommended from "../components/Recommended";
+import { getMe, refreshUser } from "../services/userServices";
 
 export default function RecommendedPage() {
   const [filters, setFilters] = useState<FilterFormValues>({
@@ -21,10 +22,16 @@ export default function RecommendedPage() {
   };
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    console.log(user, isAuthenticated);
+    const refresh = async () => {
+      await getMe();
+      await refreshUser();
+    };
+    refresh();
+    if (!user) {
       navigate("/register");
     }
-  }, [isAuthenticated, navigate]);
+  }, [user]);
   return (
     <main>
       <Header user={user} />

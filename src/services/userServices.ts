@@ -64,7 +64,7 @@ export interface fetchOwnBooksResponse {
   ];
 }
 
-const refreshApi = axios.create({
+export const refreshApi = axios.create({
   baseURL: "https://readjourney.b.goit.study/api",
 });
 
@@ -81,6 +81,9 @@ api.interceptors.request.use((config) => {
 
   return config;
 });
+
+let isRefreshing = false;
+let refreshPromise: Promise<any> | null = null;
 
 api.interceptors.response.use(
   (response) => response,
@@ -99,24 +102,38 @@ api.interceptors.response.use(
     originalRequest._retry = true;
 
     try {
-      const { refreshToken } = useAuthStore.getState();
+      if (!isRefreshing) {
+        isRefreshing = true;
 
-      if (!refreshToken) {
-        throw new Error("No refresh token");
+        const { refreshToken } = useAuthStore.getState();
+
+        if (!refreshToken) throw new Error("No refresh token");
+
+        refreshPromise = refreshApi.get("/users/current/refresh", {
+          headers: {
+            Authorization: `Bearer ${refreshToken}`,
+          },
+        });
+
+        const { data } = await refreshPromise;
+
+        useAuthStore.getState().setAuth(data);
+
+        isRefreshing = false;
+        refreshPromise = null;
+      } else {
+        await refreshPromise;
       }
 
-      const { data } = await refreshApi.get("/users/current/refresh", {
-        headers: {
-          Authorization: `Bearer ${refreshToken}`,
-        },
-      });
+      const newToken = useAuthStore.getState().token;
 
-      useAuthStore.getState().setAuth(data);
-
-      originalRequest.headers.Authorization = `Bearer ${data.token}`;
+      originalRequest.headers.Authorization = `Bearer ${newToken}`;
 
       return api(originalRequest);
     } catch (err) {
+      isRefreshing = false;
+      refreshPromise = null;
+
       useAuthStore.getState().clearAuth();
       return Promise.reject(err);
     }
@@ -146,9 +163,23 @@ export const loginUser = async (data: loginUserRequest) => {
   }
 };
 
-export const refreshUser = async () => {
+export const getMe = async () => {
   try {
-    const response = await api.get("/users/current/refresh");
+    const response = await api.get("/users/current");
+    return response.data;
+  } catch {
+    throw new Error("Failed to fetch user");
+  }
+};
+
+export const refreshUser = async () => {
+  const { refreshToken } = useAuthStore.getState();
+  console.log(refreshToken);
+
+  try {
+    const response = await api.get("/users/current/refresh", {
+      headers: { Authorization: `Bearer ${refreshToken}` },
+    });
     return response.data;
   } catch {
     throw new Error("Failed to refresh user");

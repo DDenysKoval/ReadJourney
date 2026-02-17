@@ -9,6 +9,9 @@ import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import MyLibraryPage from "../pages/MyLibraryPage";
 import MyReadingPage from "../pages/MyReadingPage";
+import { useEffect } from "react";
+import { useAuthStore } from "../libs/store/authStore";
+import { refreshApi } from "../services/userServices";
 
 const router = createBrowserRouter([
   {
@@ -34,7 +37,33 @@ const router = createBrowserRouter([
   },
 ]);
 
+// const useAuthInit = () => {
+//   const { refreshToken, setAuth, clearAuth } = useAuthStore();
+
+//   useEffect(() => {
+//     const initAuth = async () => {
+//       if (!refreshToken) return;
+
+//       try {
+//         const { data } = await refreshApi.get("/users/current/refresh", {
+//           headers: {
+//             Authorization: `Bearer ${refreshToken}`,
+//           },
+//         });
+//         console.log(data);
+
+//         setAuth(data);
+//       } catch {
+//         clearAuth();
+//       }
+//     };
+
+//     initAuth();
+//   }, []);
+// };
+
 const App = () => {
+  // useAuthInit();
   return (
     <>
       <RouterProvider router={router} />

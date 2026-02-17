@@ -12,6 +12,8 @@ import ButtonComp from "./ButtonComp";
 import toast from "react-hot-toast";
 import type { FilterFormValues } from "./Filters";
 import SelectComp from "./Select";
+import { useNavigate } from "react-router";
+import type { BookWithProgress } from "../types/books";
 
 interface MyLibraryProps {
   bookToCreate: FilterFormValues | null;
@@ -23,6 +25,7 @@ export default function MyLibrary({ bookToCreate }: MyLibraryProps) {
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [status, setStatus] = useState("all");
 
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const { data } = useQuery({
@@ -74,8 +77,8 @@ export default function MyLibrary({ bookToCreate }: MyLibraryProps) {
     removeMutation.mutate(id);
   };
 
-  const handleStartReading = async (id: string) => {
-    console.log(id);
+  const handleStartReading = async (book: BookWithProgress) => {
+    navigate("/reading", { state: { book } });
   };
   useEffect(() => {
     if (!bookToCreate) return;
@@ -152,9 +155,7 @@ export default function MyLibrary({ bookToCreate }: MyLibraryProps) {
             <ButtonComp
               text="Start Reading"
               buttonData={startReadingButton}
-              onClick={() =>
-                selectedBookId && handleStartReading(selectedBookId)
-              }
+              onClick={() => selectedBookId && handleStartReading(selectedBook)}
             />
           </div>
         </Modal>
