@@ -35,6 +35,32 @@ export interface fetchAllBooksRequest {
   filters?: FilterFormValues;
 }
 
+export interface fetchBookByIdResponse {
+  _id: string;
+  title: string;
+  author: string;
+  imageUrl: string;
+  totalPages: number;
+  status: "in-progress" | "done" | "unread";
+  owner: string;
+  progress: [
+    {
+      _id: string;
+      startPage: number;
+      startReading: string;
+      finishPage: number;
+      finishReading: string;
+      speed: number;
+      status: string;
+    },
+  ];
+  timeLeftToRead: {
+    hours: number;
+    minutes: number;
+    seconds: number;
+  };
+}
+
 export interface fetchAllBooksResponse {
   results: Book[];
   totalPages: number;
@@ -54,6 +80,7 @@ export interface fetchOwnBooksResponse {
   owner: string;
   progress: [
     {
+      _id: string;
       startPage: number;
       startReading: string;
       finishPage: number;
@@ -62,6 +89,89 @@ export interface fetchOwnBooksResponse {
       status: string;
     },
   ];
+}
+
+export interface startFinishReadingRequest {
+  id: string;
+  page: number;
+}
+
+export interface startReadingResponse {
+  _id: string;
+  title: string;
+  author: string;
+  imageUrl: string;
+  totalPages: number;
+  status: "in-progress" | "done" | "unread";
+  owner: string;
+  progress: [
+    {
+      _id: string;
+      startPage: number;
+      startReading: string;
+      finishPage: number;
+      finishReading: string;
+      speed: number;
+      status: string;
+    },
+  ];
+}
+
+export interface finishReadingResponse {
+  _id: string;
+  title: string;
+  author: string;
+  imageUrl: string;
+  totalPages: number;
+  status: "in-progress" | "done" | "unread";
+  owner: string;
+  progress: [
+    {
+      _id: string;
+      startPage: number;
+      startReading: string;
+      finishPage: number;
+      finishReading: string;
+      speed: number;
+      status: string;
+    },
+  ];
+  timeLeftToRead: {
+    hours: number;
+    minutes: number;
+    seconds: number;
+  };
+}
+
+export interface deleteReadingRequest {
+  bookId: string;
+  readingId: string;
+}
+
+export interface deleteReadingResponse {
+  _id: string;
+  title: string;
+  author: string;
+  imageUrl: string;
+  totalPages: number;
+  status: "in-progress" | "done" | "unread";
+  owner: string;
+  progress: [
+    {
+      _id: string;
+      startPage: number;
+      startReading: string;
+      finishPage: number;
+      finishReading: string;
+      speed: number;
+      status: string;
+    },
+  ];
+  timeLeftToRead: {
+    hours: number;
+    minutes: number;
+    seconds: number;
+  };
 }
 
 export const refreshApi = axios.create({
@@ -90,7 +200,10 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (!error.response || error.response.status !== 401) {
+    if (
+      error.response?.status !== 401 ||
+      originalRequest.url === "/users/current/refresh"
+    ) {
       return Promise.reject(error);
     }
 
@@ -106,7 +219,6 @@ api.interceptors.response.use(
         isRefreshing = true;
 
         const { refreshToken } = useAuthStore.getState();
-
         if (!refreshToken) throw new Error("No refresh token");
 
         refreshPromise = refreshApi.get("/users/current/refresh", {
@@ -221,7 +333,7 @@ export const fetchAllBooks = async ({
 
 export const fetchBookById = async (id: string) => {
   try {
-    const response = await api.get(`/books/${id}`);
+    const response = await api.get<fetchBookByIdResponse>(`/books/${id}`);
     return response.data;
   } catch {
     throw new Error("Failed to fetch book");
@@ -263,5 +375,47 @@ export const removeBookFromLibrary = async (id: string) => {
     return response.data;
   } catch {
     throw new Error("Failed to remove book from library");
+  }
+};
+
+export const startReading = async (body: startFinishReadingRequest) => {
+  try {
+    const response = await api.post<startReadingResponse>(
+      "/books/reading/start",
+      body
+    );
+    return response.data;
+  } catch {
+    throw new Error("Failed to start reading");
+  }
+};
+
+export const finishReading = async (body: startFinishReadingRequest) => {
+  try {
+    const response = await api.post<finishReadingResponse>(
+      "/books/reading/finish",
+      body
+    );
+    return response.data;
+  } catch {
+    throw new Error("Failed to finish reading");
+  }
+};
+
+export const deleteReading = async ({
+  bookId,
+  readingId,
+}: deleteReadingRequest) => {
+  try {
+    const response = await api.delete("/books/reading", {
+      params: {
+        bookId,
+        readingId,
+      },
+    });
+
+    return response.data;
+  } catch {
+    throw new Error("Failed to delete reading");
   }
 };

@@ -1,13 +1,11 @@
-import { useState } from "react";
 import type { BookWithProgress } from "../types/books";
 
 interface MyReadingProps {
   book: BookWithProgress;
+  isReading: boolean;
 }
 
-export default function MyReading({ book }: MyReadingProps) {
-  const [bookInProgress, setBookInProgress] = useState(false);
-
+export default function MyReading({ book, isReading }: MyReadingProps) {
   return (
     <section className="pb-10">
       <div className="container">
@@ -30,7 +28,7 @@ export default function MyReading({ book }: MyReadingProps) {
             className="w-10 h-10 rounded-[50px] border-white border-2 mx-auto flex justify-center items-center cursor-pointer"
             type="button"
           >
-            {!bookInProgress ? (
+            {!isReading ? (
               <div className="w-7.5 h-7.5 rounded-[50px] bg-red"></div>
             ) : (
               <div className="w-3.75 h-3.75 rounded-[3px] bg-red"></div>

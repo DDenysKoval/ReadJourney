@@ -7,6 +7,16 @@ export interface Book {
   recommend: boolean;
 }
 
+export interface ProgressItem {
+  _id: string;
+  startPage: number;
+  startReading: string;
+  finishPage: number;
+  finishReading: string;
+  speed: number;
+  status: string;
+}
+
 export interface BookWithProgress {
   _id: string;
   title: string;
@@ -15,14 +25,10 @@ export interface BookWithProgress {
   totalPages: number;
   status: "in-progress" | "done" | "unread";
   owner: string;
-  progress: [
-    {
-      startPage: number;
-      startReading: string;
-      finishPage: number;
-      finishReading: string;
-      speed: number;
-      status: string;
-    },
-  ];
+  progress: ProgressItem[];
+  timeLeftToRead: {
+    hours: number;
+    minutes: number;
+    seconds: number;
+  };
 }
